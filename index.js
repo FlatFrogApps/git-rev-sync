@@ -9,8 +9,14 @@ var HAS_NATIVE_EXECSYNC = childProcess.hasOwnProperty('spawnSync');
 var PATH_SEP = path.sep;
 var RE_BRANCH = /^ref: refs\/heads\/(.*)\n/;
 
+var IS_AZURE = (process.env.OS === 'Windows_NT');
+
 function _command(cmd, args) {
   var result;
+
+  if (IS_AZURE) {
+    args = ['-C', '../repository'].concat(args);
+  }
 
   if (HAS_NATIVE_EXECSYNC) {
     result = childProcess.spawnSync(cmd, args);
@@ -58,6 +64,9 @@ function _getGitDirectory(start) {
 }
 
 function branch(dir) {
+  if (!dir && IS_AZURE) {
+    dir = '../repository';
+  }
   var gitDir = _getGitDirectory(dir);
 
   var head = fs.readFileSync(path.resolve(gitDir, 'HEAD'), 'utf8');
@@ -71,6 +80,9 @@ function branch(dir) {
 }
 
 function long(dir) {
+  if (!dir && IS_AZURE) {
+    dir = '../repository';
+  }
   var b = branch(dir);
 
   if (/Detatched: /.test(b)) {
