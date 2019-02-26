@@ -1,8 +1,9 @@
 'use strict';
 
+var childProcess = require('child_process');
+var escapeStringRegexp = require('escape-string-regexp');
 var fs = require('graceful-fs');
 var path = require('path');
-var childProcess = require('child_process');
 var shell = require('shelljs');
 
 var HAS_NATIVE_EXECSYNC = childProcess.hasOwnProperty('spawnSync');
@@ -38,7 +39,7 @@ function _command(cmd, args) {
 }
 
 function _getGitDirectory(start) {
-  if (start === undefined) {
+  if (start === undefined || start === null) {
     start = module.parent.filename;
   }
 
@@ -55,6 +56,23 @@ function _getGitDirectory(start) {
   testPath = path.resolve(testPath, '.git');
 
   if (fs.existsSync(testPath)) {
+    if (!fs.statSync(testPath).isDirectory()) {
+      var parentRepoPath = fs.readFileSync(testPath, 'utf8').trim().split(' ').pop();
+
+      if (fs.existsSync(parentRepoPath)) {
+        return path.resolve(parentRepoPath);
+      }
+
+      var submoduleName = parentRepoPath.split('/').pop();
+      var submodulePath = '../.git/modules/' + submoduleName;
+
+      if (fs.existsSync(submodulePath)) {
+        return path.resolve(submodulePath);
+      }
+
+      throw new Error('[git-rev-sync] could not find repository from path' + parentRepoPath);
+    }
+
     return testPath;
   }
 
@@ -76,7 +94,7 @@ function branch(dir) {
     return b[1];
   }
 
-  return 'Detatched: ' + head.trim();
+  return 'Detached: ' + head.trim();
 }
 
 function long(dir) {
@@ -85,8 +103,8 @@ function long(dir) {
   }
   var b = branch(dir);
 
-  if (/Detatched: /.test(b)) {
-    return b.substr(11);
+  if (/Detached: /.test(b)) {
+    return b.substr(10);
   }
 
   var gitDir = _getGitDirectory(dir);
@@ -95,23 +113,21 @@ function long(dir) {
 
   if (fs.existsSync(refsFilePath)) {
     ref = fs.readFileSync(refsFilePath, 'utf8');
-  }
-
-  else {
+  } else {
     // If there isn't an entry in /refs/heads for this branch, it may be that
     // the ref is stored in the packfile (.git/packed-refs). Fall back to
     // looking up the hash here.
     var refToFind = ['refs', 'heads', b].join('/');
     var packfileContents = fs.readFileSync(path.resolve(gitDir, 'packed-refs'), 'utf8');
-    var packfileRegex = new RegExp('(.*) ' + refToFind);
+    var packfileRegex = new RegExp('(.*) ' + escapeStringRegexp(refToFind));
     ref = packfileRegex.exec(packfileContents)[1];
   }
 
   return ref.trim();
 }
 
-function short(dir) {
-  return long(dir).substr(0, 7);
+function short(dir, len) {
+  return long(dir).substr(0, len || 7);
 }
 
 function message() {
@@ -126,6 +142,19 @@ function tag(markDirty) {
   return _command('git', ['describe', '--always', '--tag', '--abbrev=0']);
 }
 
+function tagFirstParent(markDirty) {
+    if (markDirty) {
+        return _command('git', ['describe', '--always', '--tag', '--dirty', '--abbrev=0', '--first-parent']);
+    }
+
+    return _command('git', ['describe', '--always', '--tag', '--abbrev=0', '--first-parent']);
+}
+
+function isDirty() {
+  var writeTree = _command('git', ['write-tree']);
+  return _command('git', ['diff-index', writeTree, '--']).length > 0;
+}
+
 function isTagDirty() {
   try {
     _command('git', ['describe', '--exact-match', '--tags']);
@@ -133,9 +162,14 @@ function isTagDirty() {
     if (e.message.indexOf('no tag exactly matches')) {
       return true;
     }
+
     throw e;
   }
   return false;
+}
+
+function remoteUrl() {
+  return _command('git', ['ls-remote', '--get-url']);
 }
 
 function date() {
@@ -154,10 +188,13 @@ module.exports = {
   branch : branch,
   count: count,
   date: date,
-  log : log,
-  long : long,
-  message : message,
-  short : short,
-  tag : tag,
-  isTagDirty: isTagDirty
+  isDirty: isDirty,
+  isTagDirty: isTagDirty,
+  log: log,
+  long: long,
+  message: message,
+  remoteUrl: remoteUrl,
+  short: short,
+  tag: tag,
+  tagFirstParent: tagFirstParent
 };

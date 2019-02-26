@@ -1,9 +1,9 @@
 {
   "name": "git-rev-sync",
-  "version": "1.7.1",
+  "version": "1.12.0",
   "author": "kurttheviking",
   "bugs": {
-    "url": "https://github.com/kurttheviking/git-rev-sync/issues"
+    "url": "https://github.com/kurttheviking/git-rev-sync-js/issues"
   },
   "contributors": [
     {
@@ -22,6 +22,14 @@
       "url": "https://github.com/tblobaum"
     },
     {
+      "name": "Henrik Raitasola",
+      "url": "https://github.com/henrikra"
+    },
+    {
+      "name": "Jan Nicklas",
+      "url": "https://github.com/jantimon"
+    },
+    {
       "name": "Hendrik Reker",
       "email": "reker.opensource@gmail.com",
       "url": "https://github.com/reker-"
@@ -37,10 +45,14 @@
     {
       "name": "Colton Clemmer",
       "url": "https://github.com/orbweaver-"
+    },
+    {
+      "name": "Tiberiu Zuld",
+      "url": "https://github.com/tiberiuzuld"
     }
   ],
   "description": "Synchronously get the current git commit hash, tag, or branch",
-  "homepage": "https://github.com/kurttheviking/git-rev-sync",
+  "homepage": "https://github.com/kurttheviking/git-rev-sync-js",
   "license": "MIT",
   "main": "index.js",
   "scripts": {
@@ -50,11 +62,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@github.com:kurttheviking/git-rev-sync.git"
+    "url": "git@github.com:kurttheviking/git-rev-sync-js.git"
   },
   "dependencies": {
-    "graceful-fs": "4.1.6",
-    "shelljs": "0.7.4"
+    "escape-string-regexp": "1.0.5",
+    "graceful-fs": "4.1.11",
+    "shelljs": "0.7.7"
   },
   "devDependencies": {}
 }
