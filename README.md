@@ -1,3 +1,16 @@
+# FlatFrog Edit:
+This project was used to my knowledge as a fix to ensure that we
+could run this package on Azure. As we use GCP and we experienced
+errors using this package on windows locally (Due to or fork
+changes), this project is here only due to legacy reasons.
+
+If something is causing a hickup with this project it might be
+due to me mergin the latest changes of the package from the last
+2 years  - please try using the release v1.7.1 or other in this
+project. 
+
+_- Johan Westerlund 2019-02-27_
+
 git-rev-sync [![Build Status](https://travis-ci.org/kurttheviking/git-rev-sync-js.svg?branch=master)](https://travis-ci.org/kurttheviking/git-rev-sync-js)
 ============
 
